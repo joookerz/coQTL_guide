@@ -121,6 +121,7 @@ The user must fill in at least:
 - `COUNT_FILE`
 - `GENE_INFO_FILE`
 - `WORK_ROOT`
+- `HURDLE_COVAR_COLS` if hurdle models should adjust for covariates
 - `COVAR_COLS`
 - `SAIGE_COVAR_COLS`
 - `VR_PLINK_PREFIX`
@@ -133,10 +134,25 @@ An example filled template is available at `templates/example_config.R`.
 
 To add or remove covariates, modify:
 
+- `HURDLE_COVAR_COLS`
 - `COVAR_COLS`
 - `SAIGE_COVAR_COLS`
 
 The corresponding columns must exist in the count matrix.
+
+### Hurdle covariates
+
+Method 2 step 2 supports optional covariate adjustment through `HURDLE_COVAR_COLS` in `config.R`.
+
+- if `HURDLE_COVAR_COLS <- character(0)`, the hurdle model uses no extra covariates
+- if `HURDLE_COVAR_COLS <- c("age","sex","pc1","pc2")`, each pairwise hurdle fit adjusts for those columns from `COUNT_FILE`
+
+Current model form is:
+
+- `count_i ~ count_j + covariates`
+- `count_j ~ count_i + covariates`
+
+The count matrix must contain every column listed in `HURDLE_COVAR_COLS`.
 
 ### Step 3. Run the complete workflow
 
@@ -201,6 +217,45 @@ If the user wants to test only one cluster first:
 ```bash
 bash bin/run_saige_cluster.sh /path/to/coqtl_runs/B_in/config.R SC_chr10_cluster_001
 ```
+
+### SAIGE-QTL defaults used in this guide
+
+The wrapper `bin/run_saige_cluster.sh` currently uses these default SAIGE-QTL settings:
+
+- `--sampleIDColinphenoFile=individual`
+- `--traitType=quantitative`
+- `--invNormalize=TRUE`
+- `--useSparseGRMtoFitNULL=FALSE`
+- `--useGRMtoFitNULL=FALSE`
+- `--skipVarianceRatioEstimation=FALSE`
+- `--isRemoveZerosinPheno=FALSE`
+- `--isCovariateOffset=FALSE`
+- `--isCovariateTransform=TRUE`
+- `--skipModelFitting=FALSE`
+- `--tol=0.00001`
+- `--LOCO=FALSE`
+- `--minMAF=0.05`
+- `--markers_per_chunk=10000`
+- cis-window for each cluster region: `500000` bp on each side, controlled by `CIS_WINDOW`
+
+Required phenotype/covariate columns used by the wrapper:
+
+- `individual`
+- all columns listed in `SAIGE_COVAR_COLS`
+- cluster PC columns generated in `pheno_with_pcs.tsv`, such as `PC1`, `PC2`, ...
+
+In the example configuration used here, the SAIGE covariates are:
+
+- `age`
+- `sex`
+- `pc1`
+- `pc2`
+- `pc3`
+- `pc4`
+- `pc5`
+- `pc6`
+- `pf1`
+- `pf2`
 
 ## Final result directory
 

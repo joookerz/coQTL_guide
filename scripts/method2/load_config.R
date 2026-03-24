@@ -54,6 +54,12 @@ load_config <- function(script_dir = NULL) {
   dir.create(method2_results, recursive = TRUE, showWarnings = FALSE)
   dir.create(logs_dir, recursive = TRUE, showWarnings = FALSE)
 
+  hurdle_covar_cols <- if (exists("HURDLE_COVAR_COLS", envir = cfg_env)) {
+    cfg_env$HURDLE_COVAR_COLS
+  } else {
+    character(0)
+  }
+
   cfg <- list(
     config_path = config_path,
     cell_type = cfg_env$CELL_TYPE,
@@ -70,7 +76,8 @@ load_config <- function(script_dir = NULL) {
     secs_per_pair = cfg_env$SECS_PER_PAIR,
     max_window_size = cfg_env$MAX_WINDOW_SIZE,
     min_window_size = cfg_env$MIN_WINDOW_SIZE,
-    cluster_threshold = cfg_env$CLUSTER_THRESHOLD
+    cluster_threshold = cfg_env$CLUSTER_THRESHOLD,
+    hurdle_covar_cols = hurdle_covar_cols
   )
   cfg$chunk_dir <- file.path(cfg$method2_results, "gene_associations_chunked")
   cfg$assoc_dir <- file.path(cfg$method2_results, "gene_associations")

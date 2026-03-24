@@ -110,10 +110,22 @@ cat("Loading single-cell counts...\n")
 header_cols <- names(fread(COUNT_FILE, nrows = 0))
 id_col <- intersect(c("CellID", "barcode"), header_cols)
 if (!length(id_col)) stop("Count file must contain CellID or barcode column")
-select_cols <- unique(c(id_col[1], chr_genes))
+hurdle_covars <- intersect(cfg$hurdle_covar_cols, header_cols)
+missing_hurdle_covars <- setdiff(cfg$hurdle_covar_cols, header_cols)
+if (length(missing_hurdle_covars)) {
+  stop("Missing hurdle covariate columns in count file: ",
+       paste(missing_hurdle_covars, collapse = ", "))
+}
+select_cols <- unique(c(id_col[1], chr_genes, hurdle_covars))
 count_dt <- fread(COUNT_FILE, select = select_cols)
 count_mat <- as.matrix(count_dt[, ..chr_genes])
+hurdle_covar_dt <- if (length(hurdle_covars)) count_dt[, ..hurdle_covars] else NULL
 n_cells <- nrow(count_mat)
+if (length(hurdle_covars)) {
+  cat(sprintf("  Hurdle covariates: %s\n", paste(hurdle_covars, collapse = ", ")))
+} else {
+  cat("  Hurdle covariates: none\n")
+}
 
 # Calculate associations
 pair_idx <- combn(n_genes, 2, simplify = FALSE)
@@ -122,14 +134,20 @@ cat(sprintf("  Cells: %d, Genes: %d, Pairs: %d\n", n_cells, n_genes, n_pairs))
 
 run_pair <- function(i, j) {
   df <- data.frame(count_i = count_mat[, i], count_j = count_mat[, j])
+  if (!is.null(hurdle_covar_dt)) {
+    df <- cbind(df, as.data.frame(hurdle_covar_dt, stringsAsFactors = FALSE))
+  }
   if (all(df$count_i == 0) || all(df$count_j == 0)) {
     return(list(p_count = NA_real_, p_zero = NA_real_))
   }
 
-  fit_ij <- tryCatch(fasthurdle(count_i ~ count_j, data = df,
+  formula_ij <- reformulate(termlabels = c("count_j", hurdle_covars), response = "count_i")
+  formula_ji <- reformulate(termlabels = c("count_i", hurdle_covars), response = "count_j")
+
+  fit_ij <- tryCatch(fasthurdle(formula_ij, data = df,
                                 dist = "poisson", zero.dist = "binomial"),
                      error = function(e) NULL)
-  fit_ji <- tryCatch(fasthurdle(count_j ~ count_i, data = df,
+  fit_ji <- tryCatch(fasthurdle(formula_ji, data = df,
                                 dist = "poisson", zero.dist = "binomial"),
                      error = function(e) NULL)
 

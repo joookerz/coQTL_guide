@@ -23,6 +23,7 @@ SECS_PER_PAIR <- 0.5
 MAX_WINDOW_SIZE <- 50
 MIN_WINDOW_SIZE <- 2
 CLUSTER_THRESHOLD <- 0.70
+HURDLE_COVAR_COLS <- c("age", "sex", "pc1", "pc2", "pc3", "pc4", "pc5", "pc6", "pf1", "pf2")
 
 # PCA and phenotype generation
 COVAR_COLS <- c("age", "sex", "pc1", "pc2", "pc3", "pc4", "pc5", "pc6", "pf1", "pf2")
