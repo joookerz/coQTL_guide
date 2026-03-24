@@ -1,0 +1,10 @@
+name: coqtl-r
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-base>=4.4
+  - r-data.table
+  - r-optparse
+  - r-devtools
+  - r-remotes
