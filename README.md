@@ -2,6 +2,8 @@
 
 This directory contains a simplified coQTL workflow for one cell type. A user provides one single-cell count matrix, one gene annotation file, and genotype files for SAIGE-QTL, then runs the full pipeline step by step to generate one complete result set.
 
+In this guide, `Method 2` refers to the hurdle-based co-expression cluster identification workflow. This is the recommended upstream approach used here.
+
 ## What this workflow does
 
 1. identify co-expression clusters from a single-cell count matrix
@@ -35,6 +37,8 @@ Required R packages:
 - `fasthurdle >= 1.1.1`
 
 `envs/coqtl_r.yml` already covers the base R environment used by this guide. `fasthurdle` is the only required R package that still needs to be installed separately before running Method 2.
+
+Here, `Method 2` is the recommended hurdle-based workflow for identifying co-expression clusters from sparse single-cell expression data.
 
 Example checks:
 
@@ -175,6 +179,8 @@ This step:
 3. merges significant pairs
 4. identifies co-expression clusters
 5. merges cluster results across chromosomes
+
+This is the recommended hurdle workflow in this guide. It is the upstream step that defines the gene clusters used by all downstream PCA and SAIGE-QTL analyses.
 
 Main outputs:
 
